@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const out='dist';
+fs.rmSync(out,{recursive:true,force:true});
+fs.mkdirSync(path.join(out,'vendor'),{recursive:true});
+fs.mkdirSync(path.join(out,'engine'),{recursive:true});
+const copy=(from,to)=>{if(!fs.existsSync(from))throw Error('Missing required dependency: '+from+' — run npm install first');fs.copyFileSync(from,path.join(out,to));};
+for(const name of ['index.html','sw.js','manifest.webmanifest','icon.svg']) copy(name,name);
+copy('node_modules/chess.js/dist/esm/chess.js','vendor/chess.js');
+for(const name of ['stockfish-19-lite-single.js','stockfish-19-lite-single.wasm']) copy('node_modules/stockfish/bin/'+name,'engine/'+name);
+console.log('Static PWA assembled in dist/. Deploy the contents of dist/ to GitHub Pages.');

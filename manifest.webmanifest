@@ -1,0 +1,1 @@
+{"name":"Grandmaster Chess Coach","short_name":"Chess Coach","description":"Offline-first Stockfish chess training and saved progression","start_url":"./","scope":"./","display":"standalone","background_color":"#0d1522","theme_color":"#162438","icons":[{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
