@@ -1,50 +1,36 @@
-# Grandmaster Chess Coach — v0.3 Adaptive Instructor (Android/GitHub Pages)
+# Grandmaster Chess Coach v0.4 — live opponent + study clock
 
-## What changed since v0.2
+**GitHub Pages update for existing v0.2/v0.3 installations.** This is a static PWA build with Stockfish 19 Lite. No Node server is needed after GitHub Actions publishes it.
 
-- New **Play**, **Coach**, **Analysis**, **Progress** tab navigation. A board-first layout makes mobile use less scroll-heavy.
-- **Adaptive** coaching (default): comments stay brief when moves are sound; recurring issues trigger more detailed advice. **Quiet** and **Active** modes are selectable under Coach.
-- Opponent-move explanation and a before-your-next-move tactical checklist on the Play tab.
-- Token and sound-move streak counter, kept in the existing IndexedDB state; old v0.2 state loads with zero tokens. The rewards are exploratory practice incentives, **not** Elo, a verified skill rating, or proof of improvement.
-- Move-selection guidance now includes destination squares and basic algebraic notation.
-- A stronger 'Best defence' label is used when the engine assesses a heavily lost position, rather than treating low centipawn loss there as evidence of excellent play.
-- v0.2 format/schema **2** backup is still accepted. The existing database remains `GrandmasterChessCoachV2`.
+## Changes
+- Black's occasional opponent comments appear as brief fading bubbles over the board. Checks, key captures, opening recognition and good play can trigger them; most ordinary moves stay quiet.
+- Strict opening recognition: `1.d4 d5 2.c4` is the Queen's Gambit. `d4` followed by `e3` is labelled a queen-pawn setup, not incorrectly called a Queen's Gambit.
+- Capture destinations carry a red **×**. En passant captures are included.
+- Hint button answers **on the Play screen**, not only the Coach tab. Coach tab still stores deeper feedback.
+- An untimed cumulative study clock is displayed for both colours. **White's first move starts Black's clock.** Each move thereafter finishes the moving side's accumulated time and starts the other side's. The clock stops when the app/tab is hidden or unloaded; it restarts when visible. This is *not* a blitz countdown or a time limit.
+- Each timed ply is recorded as `durationMs`, `whiteMs`, and `blackMs` in `state[0].active.clock.turns` in your full JSON backup. The app also saves accumulated clocks on interval and when hidden, alongside other game data. Completed game archives include clock data.
+- Game snapshot PNG export under **Progress**, showing board and accumulated clock. This is an image, while JSON is the full recoverable archive.
+- Existing backup structure remains `schema: 2` and IndexedDB database remains `GrandmasterChessCoachV2`; v0.3 data should load in place.
 
-This is an iterative prototype. It does not yet contain full tactical motif explanation, a speech-enabled opponent, calibrated Elo, scheduled practice, blitz clocks, opening/attack/defence modules, or cross-device sync. It does not perform search when closed; it preserves state for reopening. Some coaching diagnoses remain heuristic.
+## Important limits
+- Speech bubbles are contextual and rule-based; they are not freeform LLM conversation.
+- Browser storage is device-local. Use **Backup everything (JSON)** frequently, especially before updates.
+- No engine computations continue while Chrome or the installed PWA is closed.
+- Paused time does not accrue while the app is hidden; Android may terminate the browser without notifying it, so periodic in-app saving reduces but does not remove the possibility of losing seconds since the last save.
+- Move-quality classifications and learning rewards remain prototypes, not verified performance ratings.
 
-## IMPORTANT: Protect your data before updating
+## Updating your existing phone-hosted website
+1. In the *existing chess website*, go to **Progress → Backup everything (JSON)**. Keep the download safe.
+2. Extract this ZIP in Android My Files.
+3. Open your **existing** GitHub repository, `stanleypanley54-web/Grandmaster-Level-Chess-Teacher-App-Prototype`.
+4. Upload the files **inside** `grandmaster_chess_coach_v0.4/` to the repository root and overwrite the existing files. **Do not** upload the ZIP itself or add a new folder around the project.
+5. Keep the existing `.github/workflows/pages.yml`, or replace it with the included equivalent.
+6. Commit to `main` (`Update Chess Coach v0.4`). The GitHub Pages Action should rebuild.
+7. Once Actions shows a green tick, reopen your existing Pages website and refresh. Check `prototype 0.4` in the header.
+8. Open a game, play a few moves, close/reopen, and confirm clock + board resume. Export JSON and PNG as a second check.
 
-1. On your **existing live v0.2** chess site, open the training profile and press **Backup everything (JSON)**.
-2. Confirm the `.json` file downloaded into Android Downloads. Keep a second copy outside your browser if possible.
-3. Do **not** delete browser site data, remove Chrome storage, change domain or uninstall the PWA to update. The app's IndexedDB remains when the existing GitHub Pages URL is updated normally.
+## Sources and hosting
+The project requires `npm install` at build time. The build copies `chess.js` and `stockfish` from npm into a static `dist/` folder. GitHub Actions performs this installation online. `node build.mjs` requires npm dependencies to be present. Stockfish's licensing is GPLv3; chess.js is BSD-2-Clause. Keep attribution when distributing.
 
-## Update the EXISTING repository (do NOT create a new one)
-
-Repository: `stanleypanley54-web/Grandmaster-Level-Chess-Teacher-App-Prototype`.
-
-1. Extract the ZIP. **Upload the files inside, not the ZIP itself**, to the **root of your existing repository**.
-2. Replace `index.html`, `sw.js`, `manifest.webmanifest`, `icon.svg`, `package.json`, `build.mjs` and `README.md` with their updated versions. Keep `.github/workflows/pages.yml` in the existing hidden folder; it can remain unchanged.
-3. GitHub's browser may not accept uploading directories on mobile. For the simplest upgrade, you can edit/replace the existing files individually in Chrome Desktop Site mode. GitHub's web editor supports changing file contents but large code pastes can be cumbersome.
-4. Commit changes to `main`. The existing GitHub Actions Pages workflow should launch automatically. If not: **Actions → Build and deploy chess coach → Run workflow → main**.
-5. When the run shows a green tick, visit your **same** Pages URL: `https://stanleypanley54-web.github.io/Grandmaster-Level-Chess-Teacher-App-Prototype/`.
-6. Load once online to cache the new assets. If an old app screen remains, close/reopen the tab or refresh it once (do not clear website data).
-7. Confirm your 2 games and older training profile still appear. Check the tabs and the new token counter. Test a few moves, close/reopen, then export a fresh v0.3 backup.
-
-The Action workflow needs `npm install` and `npm run build` in the repo root. Node version 22 is configured in the existing workflow. The first build downloads the `stockfish` and `chess.js` dependencies, then bundles them into static files; the app itself runs offline after those are cached.
-
-## Test protocol
-
-1. **Old data**: your prior completed games and saved stats remain visible after upgrading.
-2. **Movement**: tap a White piece; confirm legal destinations and algebraic move names are visible.
-3. **Coach**: first move shows feedback and tokens; Black replies; check the new response in the Play tab; the Coach tab shows expanded context.
-4. **Adaptive**: after several sound moves, guidance should be shorter. Switch to Active for extra tips, Quiet for fewer tips.
-5. **Persistence**: close Chrome during a game, reopen; verify the same position and saved tokens.
-6. **Export**: generate a full JSON backup, and retain the downloaded file for audit.
-
-## Constraints & honesty
-
-- `stockfish` is the search engine, but Stockfish Lite is not guaranteed to play at a fixed Elo. The `Engine think` selector controls milliseconds, **not Elo**.
-- Evaluation and move labels are estimates from finite engine searches; tokens do not validate a player's skill.
-- Database storage can be deleted by browser/device data clearing. Always maintain an external JSON export periodically.
-- The same public static GitHub Pages app does **not** make your local game history public. Do not upload private backups to the public repo.
-- Stockfish GPL-3.0 license obligations and chess.js BSD license apply to the dependencies (see their upstream package docs).
+## Validation
+The updated inline JS can be syntax checked with Node, and the ZIP/file layout checked locally. A complete GitHub Actions build and Android gameplay were not run in this environment; please treat v0.4 as a **test build**.

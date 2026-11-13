@@ -1,4 +1,4 @@
-const CACHE='chess-coach-static-v0.3.0';
+const CACHE='chess-coach-static-v0.4.0';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon.svg','./vendor/chess.js','./engine/stockfish-19-lite-single.js','./engine/stockfish-19-lite-single.wasm'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(async cache=>{for(const url of ASSETS){const response=await fetch(url,{cache:'reload'});if(!response.ok)throw Error('Unable to cache '+url);await cache.put(url,response);}await self.skipWaiting();}));});
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{for(const key of await caches.keys())if(key.startsWith('chess-coach-static-')&&key!==CACHE)await caches.delete(key);await self.clients.claim();})());});
